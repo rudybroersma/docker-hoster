@@ -1,13 +1,14 @@
 # Hoster
 
 A simple "etc/hosts" file injection tool to resolve names of local Docker containers on the host.
+This version includes IPv6 support!
 
 hoster is intended to run in a Docker container:
 
     docker run -d \
         -v /var/run/docker.sock:/tmp/docker.sock \
         -v /etc/hosts:/tmp/hosts \
-        dvdarias/docker-hoster
+        tozzje/docker-hoster
 
 The `docker.sock` is mounted to allow hoster to listen for Docker events and automatically register containers IP.
 
@@ -24,7 +25,5 @@ For example, the following container would be available via DNS as `myname`, `my
         --hostname myhostname \
         --network somenetwork --network-alias "myserver.com" \
         mycontainer
-
-If you need more features like **systemd interation** and **dns forwarding** please check [resolvable](https://hub.docker.com/r/mgood/resolvable/)
 
 Any contribution is, of course, welcome. :)

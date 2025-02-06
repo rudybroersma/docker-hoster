@@ -1,7 +1,9 @@
 # Hoster
 
 A simple "etc/hosts" file injection tool to resolve names of local Docker containers on the host.
-This version includes IPv6 support!
+
+This is an edited versoin of the original code from https://github.com/dvddarias/docker-hoster.
+My version includes IPv6 support and fixes an issue I had with extra networks not getting populated.
 
 hoster is intended to run in a Docker container:
 

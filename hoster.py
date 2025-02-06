@@ -81,6 +81,7 @@ def get_container_data(dockerClient, container_id):
 
         result.append({
                 "ip": values["IPAddress"] , 
+                "ipv6": values["GlobalIPv6Address"] , 
                 "name": container_name,
                 "domains": set(values["Aliases"] + [container_name, container_hostname])
             })
@@ -99,9 +100,12 @@ def update_hosts_file():
 
     for id,addresses in hosts.items():
         for addr in addresses:
-            print("ip: %s domains: %s" % (addr["ip"], addr["domains"]))
+            if "ipv6" in addr:
+                print("ip: %s ipv6: %s domains: %s" % (addr["ip"], addr["ipv6"], addr["domains"]))
+            else:
+                print("ip: %s domains: %s" % (addr["ip"], addr["domains"]))
 
-    #read all the lines of thge original file
+    #read all the lines of the original file
     lines = []
     with open(hosts_path,"r+") as hosts_file:
         lines = hosts_file.readlines()
@@ -122,7 +126,9 @@ def update_hosts_file():
         
         for id, addresses in hosts.items():
             for addr in addresses:
-                lines.append("%s    %s\n"%(addr["ip"],"   ".join(addr["domains"])))
+                lines.append("%s\t\t%s\n"%(addr["ip"],"\t".join(addr["domains"])))
+                if "ipv6" in addr:
+                    lines.append("%s\t%s\n"%(addr["ipv6"],"\t".join(addr["domains"])))
         
         lines.append("#-----Do-not-add-hosts-after-this-line-----\n\n")
 

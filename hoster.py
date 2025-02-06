@@ -6,6 +6,7 @@ import signal
 import time
 import sys
 import os
+from pprint import pprint 
 
 label_name = "hoster.domains"
 enclosing_pattern = "#-----------Docker-Hoster-Domains----------\n"
@@ -69,25 +70,36 @@ def get_container_data(dockerClient, container_id):
     container_hostname = info["Config"]["Hostname"]
     container_name = info["Name"].strip("/")
     container_ip = info["NetworkSettings"]["IPAddress"]
+    container_ip6 = info["NetworkSettings"]["GlobalIPv6Address"]
     if info["Config"]["Domainname"]:
         container_hostname = container_hostname + "." + info["Config"]["Domainname"]
-    
+
     result = []
 
     for values in info["NetworkSettings"]["Networks"].values():
-        
-        if not values["Aliases"]: 
+
+        if not values["DNSNames"]: 
             continue
 
         result.append({
-                "ip": values["IPAddress"] , 
-                "ipv6": values["GlobalIPv6Address"] , 
+                "ip": values["IPAddress"],
+                "ip6": values["GlobalIPv6Address"],
                 "name": container_name,
-                "domains": set(values["Aliases"] + [container_name, container_hostname])
+                "domains": set(values["DNSNames"] + [container_name, container_hostname])
             })
+
+        if values["GlobalIPv6Address"]:
+            result.append({
+                    "ip": values["GlobalIPv6Address"],
+                    "name": container_name,
+                    "domains": set(values["DNSNames"] + [container_name, container_hostname])
+                })
 
     if container_ip:
         result.append({"ip": container_ip, "name": container_name, "domains": [container_name, container_hostname ]})
+
+    if container_ip6:
+        result.append({"ip": container_ip6, "name": container_name, "domains": [container_name, container_hostname ]})
 
     return result
 
@@ -100,10 +112,7 @@ def update_hosts_file():
 
     for id,addresses in hosts.items():
         for addr in addresses:
-            if "ipv6" in addr:
-                print("ip: %s ipv6: %s domains: %s" % (addr["ip"], addr["ipv6"], addr["domains"]))
-            else:
-                print("ip: %s domains: %s" % (addr["ip"], addr["domains"]))
+            print("ip: %s domains: %s" % (addr["ip"], addr["domains"]))
 
     #read all the lines of the original file
     lines = []
@@ -127,8 +136,6 @@ def update_hosts_file():
         for id, addresses in hosts.items():
             for addr in addresses:
                 lines.append("%s\t\t%s\n"%(addr["ip"],"\t".join(addr["domains"])))
-                if "ipv6" in addr:
-                    lines.append("%s\t%s\n"%(addr["ipv6"],"\t".join(addr["domains"])))
         
         lines.append("#-----Do-not-add-hosts-after-this-line-----\n\n")
 
@@ -150,3 +157,4 @@ def parse_args():
 if __name__ == '__main__':
     main()
 
+    
